@@ -1,0 +1,13 @@
+<header class="top-header">
+    <% if (currentUser) { %>
+        <div class="user-profile">
+            <span class="role-badge">
+                <%= currentUser.role === 'directeur' ? 'Directeur' : 'Étudiant' %>
+            </span>
+            <span style="font-weight: 500; font-size: 0.875rem; color: #334155;">
+                <%= currentUser.username %>
+            </span>
+            <a href="/logout" class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem; border-color: #cbd5e1;">Déconnexion</a>
+        </div>
+    <% } %>
+</header>
