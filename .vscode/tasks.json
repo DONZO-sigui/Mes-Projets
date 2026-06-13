@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Kill old server and start backend",
+			"type": "shell",
+			"command": "powershell -NoProfile -Command \"Get-NetTCPConnection -LocalPort 5000 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }; node server.js\"",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}
