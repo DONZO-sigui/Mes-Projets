@@ -1,0 +1,112 @@
+{
+  "universities": [
+    {
+      "id": 1,
+      "name": "Université Gamal Abdel Nasser de Conakry",
+      "city": "Conakry",
+      "status": "publique",
+      "founded_year": 1962
+    },
+    {
+      "id": 2,
+      "name": "Université Général Lansana Conté de Sonfonia",
+      "city": "Conakry",
+      "status": "publique",
+      "founded_year": 2005,
+      "logo_url": "https://via.placeholder.com/150?text=Logo+Uni"
+    },
+    {
+      "id": 3,
+      "name": "Université de N'Zérékoré",
+      "city": "N'Zérékoré",
+      "status": "publique",
+      "founded_year": 2001,
+      "logo_url": "https://via.placeholder.com/150?text=Logo+Uni"
+    },
+    {
+      "id": 4,
+      "name": "Institut Supérieur de Technologie de Mamou",
+      "city": "Mamou",
+      "status": "publique",
+      "founded_year": 2004
+    },
+    {
+      "id": 5,
+      "name": "Université Kofi Annan de Guinée",
+      "city": "Conakry",
+      "status": "privee",
+      "founded_year": 1999,
+      "logo_url": "https://via.placeholder.com/150?text=Logo+Uni"
+    },
+    {
+      "id": 1788429450616,
+      "name": "Université de Faranah",
+      "acronym": "",
+      "status": "publique",
+      "city": "faranah",
+      "founded_year": "5",
+      "website": "",
+      "description": "",
+      "logo_url": ""
+    },
+    {
+      "id": 1788429498605,
+      "name": "Université de Kankan",
+      "acronym": "",
+      "status": "publique",
+      "city": "kankan",
+      "founded_year": "3",
+      "website": "",
+      "description": "",
+      "logo_url": ""
+    },
+    {
+      "id": 1788429542313,
+      "name": "Université de Labé",
+      "acronym": "",
+      "status": "publique",
+      "city": "Labé",
+      "founded_year": "0",
+      "website": "",
+      "description": "",
+      "logo_url": "https://via.placeholder.com/150?text=Logo+Uni"
+    }
+  ],
+  "faculties": [
+    {
+      "id": 1,
+      "name": "Faculté des Sciences",
+      "university_id": 1
+    },
+    {
+      "id": 2,
+      "name": "Faculté de Droit",
+      "university_id": 2
+    }
+  ],
+  "programs": [
+    {
+      "id": 1,
+      "name": "Génie Logiciel",
+      "faculty_id": 1
+    },
+    {
+      "id": 2,
+      "name": "Droit des affaires",
+      "faculty_id": 2
+    }
+  ],
+  "jobs": [
+    {
+      "id": 1,
+      "name": "Développeur Web",
+      "program_id": 1
+    },
+    {
+      "id": 2,
+      "name": "Avocat d'affaires",
+      "program_id": 2
+    }
+  ],
+  "resetTokens": {}
+}
