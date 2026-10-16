@@ -1,0 +1,18 @@
+Migrations Alembic — GNF-Token
+
+Commandes utiles :
+
+  Créer une migration automatique :
+    alembic revision --autogenerate -m "description"
+
+  Appliquer toutes les migrations :
+    alembic upgrade head
+
+  Revenir d'une migration :
+    alembic downgrade -1
+
+  Voir l'historique :
+    alembic history
+
+  Voir la révision actuelle :
+    alembic current

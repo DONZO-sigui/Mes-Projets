@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GNF-Token · Dashboard Blockchain Guinée</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-hex">
+      <svg viewBox="0 0 40 40" fill="none">
+        <path d="M20 3L35 11.5V28.5L20 37L5 28.5V11.5L20 3Z" fill="#1A6FE8" opacity="0.15" stroke="#1A6FE8" stroke-width="1.5"/>
+        <path d="M20 9L29 14V26L20 31L11 26V14L20 9Z" fill="#1A6FE8" opacity="0.3"/>
+        <text x="20" y="24" text-anchor="middle" fill="#1A6FE8" font-size="11" font-weight="700" font-family="DM Sans">GNF</text>
+      </svg>
+    </div>
+    <div class="logo-text">
+      <span class="logo-title">GUINEE-DIASPO</span>
+      <span class="logo-sub">Blockchain · Guinée</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" data-tab="dashboard">
+      <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" fill="currentColor"/><rect x="11" y="2" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.4"/><rect x="2" y="11" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.4"/><rect x="11" y="11" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.4"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" data-tab="transaction">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M3 10h14M13 6l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Envoyer</span>
+    </button>
+    <button class="nav-item" data-tab="chaine">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M8 10a2 2 0 104 0 2 2 0 00-4 0zM3 5h3M14 5h3M3 15h3M14 15h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="5" y="3" width="4" height="4" rx="1" fill="currentColor" opacity="0.3"/><rect x="11" y="3" width="4" height="4" rx="1" fill="currentColor" opacity="0.3"/><rect x="5" y="13" width="4" height="4" rx="1" fill="currentColor" opacity="0.3"/><rect x="11" y="13" width="4" height="4" rx="1" fill="currentColor" opacity="0.3"/></svg>
+      <span>Chaîne</span>
+    </button>
+    <button class="nav-item" data-tab="mnbc">
+      <svg viewBox="0 0 20 20" fill="none"><path d="M2 7h16M5 3h10l2 4H3L5 3zM4 11h12v6H4v-6z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>MNBC</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-status">
+    <div class="status-dot" id="status-dot"></div>
+    <div class="status-info">
+      <span class="status-label" id="status-label">Chaîne valide</span>
+      <span class="status-sub" id="status-blocs">0 blocs · 0 tx</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- ── TOP BAR ── -->
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-chips">
+      <div class="chip chip-green">
+        <span class="chip-dot"></span>
+        <span id="chip-volume">$0 simulés</span>
+      </div>
+      <div class="chip chip-blue">
+        <span>Difficulté : d = 3</span>
+      </div>
+      <div class="chip chip-grey">
+        <span>Python · Flask · SHA-256</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       PAGE : DASHBOARD
+  ══════════════════════════════════════════════════════ -->
+  <section class="page active" id="page-dashboard">
+
+    <!-- KPI row -->
+    <div class="kpi-row">
+      <div class="kpi-card kpi-blue animate-in" style="--delay:.05s">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">Volume total</div>
+          <div class="kpi-value" id="kpi-volume">$0</div>
+          <div class="kpi-sub" id="kpi-nb-tx">0 transactions simulées</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-green animate-in" style="--delay:.1s">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">Frais GNF-Token</div>
+          <div class="kpi-value" id="kpi-frais-bc">$0</div>
+          <div class="kpi-sub">Taux : 0,1 %</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-red animate-in" style="--delay:.15s">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">Frais Western Union</div>
+          <div class="kpi-value" id="kpi-frais-wu">$0</div>
+          <div class="kpi-sub">Taux : 8,0 %</div>
+        </div>
+      </div>
+      <div class="kpi-card kpi-gold animate-in" style="--delay:.2s">
+        <div class="kpi-icon">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-label">Économie réalisée</div>
+          <div class="kpi-value" id="kpi-economie">$0</div>
+          <div class="kpi-sub">vs Western Union</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid principale -->
+    <div class="grid-2">
+
+      <!-- Comparaison frais -->
+      <div class="card animate-in" style="--delay:.25s">
+        <div class="card-header">
+          <div class="card-title">Comparaison des frais</div>
+          <div class="card-badge">3 systèmes</div>
+        </div>
+        <div class="bars-section">
+          <div class="bar-row">
+            <div class="bar-info">
+              <span class="bar-name">GNF-Token</span>
+              <span class="bar-rate bar-rate-green">0,1 %</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill bar-fill-green" id="bar-bc" style="width:0%">
+                <span class="bar-label-inside" id="bval-bc">$0</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-info">
+              <span class="bar-name">MTN Mobile Money</span>
+              <span class="bar-rate bar-rate-orange">3,5 %</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill bar-fill-orange" id="bar-mtn" style="width:0%">
+                <span class="bar-label-inside" id="bval-mtn">$0</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-info">
+              <span class="bar-name">Western Union</span>
+              <span class="bar-rate bar-rate-red">8,0 %</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill bar-fill-red" id="bar-wu" style="width:0%">
+                <span class="bar-label-inside" id="bval-wu">$0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="compare-pills">
+          <div class="pill pill-green">⬡ GNF-Token · &lt; 60 sec</div>
+          <div class="pill pill-orange">📱 MTN · 2–30 min</div>
+          <div class="pill pill-red">🏦 W.Union · 2–5 jours</div>
+        </div>
+      </div>
+
+      <!-- Géographie -->
+      <div class="card animate-in" style="--delay:.3s">
+        <div class="card-header">
+          <div class="card-title">Répartition géographique</div>
+          <div class="card-badge">5 villes</div>
+        </div>
+        <div id="geo-list" class="geo-list">
+          <div class="empty-state">
+            <svg viewBox="0 0 40 40" fill="none" width="40"><circle cx="20" cy="20" r="18" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="4 3"/><path d="M20 10v10l6 3" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <p>Lancez une simulation</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Simulation -->
+    <div class="card card-sim animate-in" style="--delay:.35s">
+      <div class="card-header">
+        <div class="card-title">Simulation rapide</div>
+        <div class="sim-inline">
+          <div class="slider-group">
+            <span class="slider-label">Transactions :</span>
+            <input type="range" min="5" max="50" step="5" value="10" id="sim-slider" class="slider"/>
+            <span class="slider-val" id="nb-tx-label">10</span>
+          </div>
+          <button class="btn btn-primary" id="btn-simulation">
+            <svg viewBox="0 0 16 16" fill="none" width="14"><path d="M3 2l10 6-10 6V2z" fill="currentColor"/></svg>
+            Lancer
+          </button>
+          <button class="btn btn-ghost" id="btn-reset">
+            <svg viewBox="0 0 16 16" fill="none" width="14"><path d="M2 8a6 6 0 1112 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2 8l2-2M2 8l-2-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            Reset
+          </button>
+        </div>
+      </div>
+      <div id="sim-log" class="sim-log">
+        <span class="log-placeholder">Les résultats du minage apparaîtront ici…</span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       PAGE : ENVOYER
+  ══════════════════════════════════════════════════════ -->
+  <section class="page" id="page-transaction">
+    <div class="grid-2">
+
+      <div class="card animate-in" style="--delay:.05s">
+        <div class="card-header">
+          <div class="card-title">Nouveau transfert</div>
+          <div class="card-badge card-badge-blue">Diaspora → Guinée</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Ville d'origine</label>
+            <select id="tx-source" class="form-select">
+              <option>Paris</option><option>New York</option>
+              <option>Dubai</option><option>Lyon</option><option>Londres</option><option>Moscou</option>
+            </select>
+          </div>
+          <div class="form-arrow">
+            <svg viewBox="0 0 24 24" fill="none" width="20"><path d="M5 12h14M13 6l6 6-6 6" stroke="#1A6FE8" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ville de destination</label>
+            <select id="tx-dest" class="form-select">
+              <option>Conakry</option><option>Kindia</option>
+              <option>Kankan</option><option>Labé</option><option>N'Zérékoré</option><option>Lola</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Montant (USD)</label>
+          <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="number" id="tx-montant" class="form-input" value="500" min="10"/>
+          </div>
+        </div>
+
+        <div class="preview-box">
+          <div class="preview-row">
+            <span>Montant envoyé</span>
+            <strong id="prev-montant">$500,00</strong>
+          </div>
+          <div class="preview-divider"></div>
+          <div class="preview-row preview-green">
+            <span>Frais GNF-Token (0,1 %)</span>
+            <strong id="prev-frais">$0,50</strong>
+          </div>
+          <div class="preview-row preview-red">
+            <span>Frais Western Union (8 %)</span>
+            <strong id="prev-wu">$40,00</strong>
+          </div>
+          <div class="preview-divider"></div>
+          <div class="preview-row preview-gold preview-big">
+            <span>💰 Vous économisez</span>
+            <strong id="prev-eco">$39,50</strong>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full" id="btn-envoyer">
+          <svg viewBox="0 0 20 20" fill="none" width="16"><path d="M18 2L9 11M18 2l-6 16-3-7-7-3 16-6z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Envoyer via GNF-Token
+        </button>
+      </div>
+
+      <div class="card animate-in" style="--delay:.1s">
+        <div class="card-header">
+          <div class="card-title">Dernières transactions</div>
+          <div class="card-badge" id="tx-count-badge">0 tx</div>
+        </div>
+        <div id="tx-feed" class="tx-feed">
+          <div class="empty-state">
+            <svg viewBox="0 0 40 40" fill="none" width="40"><path d="M8 20h24M20 8v24" stroke="#CBD5E1" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <p>Aucune transaction encore</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       PAGE : CHAÎNE
+  ══════════════════════════════════════════════════════ -->
+  <section class="page" id="page-chaine">
+    <div class="card animate-in" style="--delay:.05s">
+      <div class="card-header">
+        <div class="card-title">Structure de la Blockchain GNF-Token</div>
+        <div class="card-badge card-badge-green" id="chaine-badge">0 blocs</div>
+      </div>
+      <div id="chaine-scroll" class="chaine-scroll">
+        <div class="empty-state">
+          <svg viewBox="0 0 40 40" fill="none" width="40"><rect x="4" y="8" width="12" height="12" rx="2" stroke="#CBD5E1" stroke-width="1.5"/><rect x="24" y="8" width="12" height="12" rx="2" stroke="#CBD5E1" stroke-width="1.5"/><path d="M16 14h8" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="2 2"/></svg>
+          <p>Lancez une simulation pour voir la chaîne</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════
+       PAGE : MNBC
+  ══════════════════════════════════════════════════════ -->
+  <section class="page" id="page-mnbc">
+    <div class="grid-2">
+
+      <div class="card animate-in" style="--delay:.05s">
+        <div class="card-header">
+          <div class="card-title">Créer un portefeuille</div>
+          <div class="card-badge">MNBC-Guinée</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">NIF guinéen (9 chiffres)</label>
+          <input type="text" id="mnbc-nif" class="form-input" placeholder="ex : 123456789" maxlength="9"/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Solde initial (GNF-D)</label>
+            <input type="number" id="mnbc-solde" class="form-input" value="5000"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ville</label>
+            <select id="mnbc-ville" class="form-select">
+              <option>Conakry</option><option>Kindia</option>
+              <option>Kankan</option><option>Labé</option><option>N'Zérékoré</option><option>Lola</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-creer-mnbc">+ Créer le portefeuille</button>
+        <div id="mnbc-msg" class="mnbc-msg"></div>
+
+        <div class="section-divider"></div>
+
+        <div class="card-header" style="margin-bottom:1rem">
+          <div class="card-title">Effectuer un transfert</div>
+        </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">NIF émetteur</label>
+              <input type="text" id="mnbc-nif-e" class="form-input" placeholder="NIF émetteur"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nom émetteur</label>
+              <input type="text" id="mnbc-nom-e" class="form-input" placeholder="Nom émetteur"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prénom émetteur</label>
+              <input type="text" id="mnbc-prenom-e" class="form-input" placeholder="Prénom émetteur"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">NIF récepteur</label>
+              <input type="text" id="mnbc-nif-r" class="form-input" placeholder="NIF récepteur"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nom récepteur</label>
+              <input type="text" id="mnbc-nom-r" class="form-input" placeholder="Nom récepteur"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Prénom récepteur</label>
+              <input type="text" id="mnbc-prenom-r" class="form-input" placeholder="Prénom récepteur"/>
+            </div>
+          </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Montant (GNF-D)</label>
+            <input type="number" id="mnbc-montant" class="form-input" value="1000"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Motif</label>
+            <input type="text" id="mnbc-motif" class="form-input" placeholder="ex : famille…"/>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-full" id="btn-transfert-mnbc">⇄ Effectuer le transfert</button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:1.25rem">
+        <div class="card animate-in" style="--delay:.1s">
+          <div class="card-header">
+            <div class="card-title">Portefeuilles actifs</div>
+            <div class="card-badge card-badge-blue" id="mnbc-count">0</div>
+          </div>
+          <div id="mnbc-portefeuilles" class="mnbc-list"></div>
+        </div>
+        <div class="card animate-in" style="--delay:.15s">
+          <div class="card-header">
+            <div class="card-title">Historique des transferts</div>
+          </div>
+          <div id="mnbc-historique" class="mnbc-list"></div>
+        </div>
+        <div class="card card-aml animate-in" style="--delay:.2s">
+          <div class="card-header">
+            <div class="card-title card-title-red">⚠ Journal AML</div>
+            <div class="card-badge card-badge-red" id="aml-count">0 incident</div>
+          </div>
+          <div id="mnbc-aml" class="mnbc-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

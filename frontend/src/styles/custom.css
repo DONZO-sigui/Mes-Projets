@@ -1,0 +1,285 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --gnf-primary: #2563eb;
+  --gnf-primary-hover: #1d4ed8;
+  --gnf-accent: #10b981;
+  --gnf-slate: #0f172a;
+  --gnf-slate-light: #1e293b;
+  --gnf-border: #e2e8f0;
+  --gnf-bg: #f8fafc;
+  --gnf-text: #0f172a;
+  --gnf-muted: #64748b;
+  
+  --bs-primary: #2563eb;
+  --bs-primary-rgb: 37, 99, 235;
+  --bs-body-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --bs-body-bg: #f8fafc;
+  --bs-body-color: #0f172a;
+  --bs-border-color: #e2e8f0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── FinTech Auth Wrapper & Background ── */
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 40%),
+    #f8fafc;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-wrapper::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.auth-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  left: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.07) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ── FinTech Auth Card ── */
+.auth-card {
+  width: 100%;
+  max-width: 500px;
+  background: #ffffff;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 
+    0 20px 40px -15px rgba(15, 23, 42, 0.07),
+    0 0 0 1px rgba(15, 23, 42, 0.03);
+  padding: 2.5rem;
+  position: relative;
+  z-index: 10;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-brand-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.6rem;
+  margin: 0 auto 1.25rem auto;
+  box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+}
+
+.auth-title {
+  font-size: 1.625rem;
+  font-weight: 800;
+  color: #0f172a;
+  text-align: center;
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.025em;
+}
+
+.auth-subtitle {
+  font-size: 0.875rem;
+  color: #64748b;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+/* ── Modern Form Controls ── */
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.01em;
+}
+
+.form-control {
+  height: 48px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #0f172a;
+  background-color: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 0.75rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-control:focus {
+  background-color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.form-control:disabled {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  opacity: 0.75;
+}
+
+.form-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.375rem;
+  font-weight: 500;
+}
+
+/* ── Modern Buttons ── */
+.btn-primary {
+  height: 50px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  font-weight: 600 !important;
+  font-size: 0.9375rem !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.35);
+  transition: all 0.2s ease !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 20px -4px rgba(37, 99, 235, 0.45);
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.65;
+  box-shadow: none;
+}
+
+/* ── Alerts & Badges ── */
+.alert-danger {
+  background-color: #fef2f2 !important;
+  border: 1px solid #fee2e2 !important;
+  color: #991b1b !important;
+  border-radius: 0.875rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  padding: 0.875rem 1rem !important;
+  margin-bottom: 1.5rem !important;
+  box-shadow: 0 2px 8px -2px rgba(239, 68, 68, 0.08);
+}
+
+/* ── Security Trust Footer ── */
+.auth-trust-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+/* ── Navigation & Global Cards ── */
+.navbar-dark.bg-primary {
+  background: #0f172a !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.navbar-brand {
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+  font-size: 1.25rem !important;
+}
+
+.navbar-nav .nav-link {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  color: #94a3b8 !important;
+  padding: 0.5rem 0.875rem !important;
+  border-radius: 0.625rem;
+  transition: all 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.navbar-nav .nav-link.active {
+  color: #ffffff !important;
+  background: rgba(37, 99, 235, 0.25) !important;
+  font-weight: 600 !important;
+}
+
+.card {
+  border-radius: 1.25rem !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 20px -5px rgba(15, 23, 42, 0.05) !important;
+  background-color: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.07) !important;
+}
+
+.badge {
+  border-radius: 0.5rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em;
+}
+
+/* Rounded card helper */
+.rounded-4 {
+  border-radius: 1.25rem !important;
+}
+
+/* Safe area for notched devices (iOS/Android) */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+@media (max-width: 767.98px) {
+  main {
+    padding-bottom: 5rem !important;
+  }
+  .auth-card {
+    padding: 1.75rem;
+    border-radius: 1.25rem;
+  }
+}

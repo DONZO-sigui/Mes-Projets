@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-Command python, py, pytest, pytest.exe 2>&1 | Where-Object { $_ -is [System.Management.Automation.ApplicationInfo] } | Select-Object Name, Source)"
+    ]
+  }
+}

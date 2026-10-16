@@ -1,0 +1,68 @@
+# ─── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ─── Environnements virtuels ──────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+backend/.venv/
+
+# ─── Variables d'environnement (JAMAIS commiter le vrai .env) ─
+.env
+.env.*
+!.env.example
+
+# ─── Node.js ──────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+.npm/
+
+# ─── Build frontend ───────────────────────────────────────────
+frontend/dist/
+frontend/build/
+dist/
+build/
+
+# ─── Éditeurs / IDE ───────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── Alembic ──────────────────────────────────────────────────
+# Ne pas ignorer les fichiers de migration, ils doivent être commités
+
+# ─── Logs ─────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Capacitor (généré) ───────────────────────────────────────
+frontend/android/
+frontend/ios/
+frontend/.capacitor/
+
+# ─── Divers ───────────────────────────────────────────────────
+*.sqlite
+*.db
+.cache/
+tmp/
