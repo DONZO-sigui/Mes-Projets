@@ -29,6 +29,33 @@ export default function Wallet() {
             />
           </div>
 
+          {/* Numéro de wallet — à partager pour recevoir de l'argent */}
+          <div className="col-12 col-md-8 col-lg-6">
+            <div className="card border-0 shadow-sm bg-primary bg-opacity-10">
+              <div className="card-body d-flex align-items-center justify-content-between gap-3 py-3">
+                <div>
+                  <p className="text-muted small mb-1 fw-semibold text-uppercase" style={{ fontSize: '0.7rem' }}>
+                    Votre numéro de wallet
+                  </p>
+                  <p className="font-monospace fw-bold fs-4 mb-0 text-primary letter-spacing-2">
+                    {data.numero}
+                  </p>
+                  <p className="text-muted mb-0" style={{ fontSize: '0.72rem' }}>
+                    Partagez ce numéro pour recevoir de l'argent
+                  </p>
+                </div>
+                <button
+                  className="btn btn-outline-primary btn-sm flex-shrink-0"
+                  onClick={() => navigator.clipboard.writeText(data.numero)}
+                  title="Copier le numéro"
+                  aria-label="Copier le numéro de wallet"
+                >
+                  <i className="bi bi-clipboard" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="col-12 col-md-8 col-lg-6">
             <div className="card border-0 shadow-sm">
               <div className="card-header bg-transparent fw-semibold py-3">

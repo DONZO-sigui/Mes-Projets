@@ -24,7 +24,7 @@ export function BalanceCard({ wallet, isLoading, error, onSend }: Props) {
 
   const depositMutation = useMutation({
     mutationFn: (amount: number) => walletsApi.deposit(amount),
-    onSuccess: (res) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wallet'] })
       setTopUpSuccess(`Compte rechargé avec succès de ${formatAmount(customAmount, wallet?.devise ?? 'GNF')} !`)
       setTimeout(() => {

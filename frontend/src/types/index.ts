@@ -111,7 +111,7 @@ export interface BeneficiaryListResponse {
 }
 
 export interface BeneficiaryCreate {
-  wallet_id: string
+  wallet_numero: string
   name: string
   nickname?: string
 }

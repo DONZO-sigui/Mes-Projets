@@ -84,7 +84,7 @@ function BeneficiaryForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setTouched({ wallet_id: true, name: true, nickname: true })
+    setTouched({ wallet_numero: true, name: true, nickname: true })
     const errs = validateForm(form, isEdit)
     setErrors(errs)
     if (Object.keys(errs).length === 0) {
@@ -97,27 +97,29 @@ function BeneficiaryForm({
       {!isEdit && (
         <div className="mb-3">
           <label htmlFor="bf-wallet" className="form-label fw-semibold">
-            Wallet du destinataire
+            Numéro de wallet du destinataire
             <span className="text-danger ms-1" aria-hidden="true">*</span>
           </label>
           <input
             id="bf-wallet"
             type="text"
+            inputMode="numeric"
             className={`form-control font-monospace ${
-              touched.wallet_id && errors.wallet_id ? 'is-invalid' : ''
+              touched.wallet_numero && errors.wallet_numero ? 'is-invalid' : ''
             }`}
-            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            value={form.wallet_id}
-            onChange={set('wallet_id')}
-            onBlur={blur('wallet_id')}
+            placeholder="123456789"
+            maxLength={9}
+            value={form.wallet_numero}
+            onChange={set('wallet_numero')}
+            onBlur={blur('wallet_numero')}
             autoComplete="off"
             spellCheck={false}
           />
-          {touched.wallet_id && errors.wallet_id ? (
-            <div className="invalid-feedback">{errors.wallet_id}</div>
+          {touched.wallet_numero && errors.wallet_numero ? (
+            <div className="invalid-feedback">{errors.wallet_numero}</div>
           ) : (
             <div className="form-text">
-              Identifiant unique du portefeuille du destinataire.
+              Numéro à 9 chiffres du portefeuille destinataire.
             </div>
           )}
         </div>
@@ -287,7 +289,7 @@ function BeneficiaryCard({
             </div>
           )}
           <div className="font-monospace text-muted small text-truncate">
-            {beneficiary.wallet_id}
+            {beneficiary.wallet_numero}
           </div>
         </div>
         <div className="d-flex flex-column gap-1 flex-shrink-0">
@@ -380,7 +382,7 @@ export default function Beneficiaries() {
   const handleAdd = (form: FormState) => {
     setMutationError(null)
     createMutation.mutate({
-      wallet_id: form.wallet_id.trim(),
+      wallet_numero: form.wallet_numero.trim(),
       name: form.name.trim(),
       nickname: form.nickname.trim() || undefined,
     })
@@ -415,7 +417,7 @@ export default function Beneficiaries() {
   }
 
   const sendTo = (b: Beneficiary) => {
-    navigate('/send', { state: { receiver_wallet_id: b.wallet_id } })
+    navigate('/send', { state: { receiver_numero: b.wallet_numero } })
   }
 
   const cancelView = () => {
@@ -493,7 +495,7 @@ export default function Beneficiaries() {
       {/* ── Vue : ajout ──────────────────────────────────────── */}
       {view.kind === 'add' && (
         <BeneficiaryForm
-          initial={{ wallet_id: '', name: '', nickname: '' }}
+          initial={{ wallet_numero: '', name: '', nickname: '' }}
           isEdit={false}
           onSubmit={handleAdd}
           onCancel={cancelView}
@@ -506,7 +508,7 @@ export default function Beneficiaries() {
       {view.kind === 'edit' && (
         <BeneficiaryForm
           initial={{
-            wallet_id: view.beneficiary.wallet_id,
+            wallet_numero: view.beneficiary.wallet_numero,
             name: view.beneficiary.name,
             nickname: view.beneficiary.nickname ?? '',
           }}
