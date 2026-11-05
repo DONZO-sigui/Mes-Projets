@@ -13,14 +13,14 @@ import type { Transaction, Devise, Beneficiary } from '../../types'
 type Step = 'form' | 'confirm' | 'result'
 
 interface FormState {
-  receiver_wallet_id: string
+  receiver_numero: string
   montant: string
   devise: Devise
   motif: string
 }
 
 const INITIAL_FORM: FormState = {
-  receiver_wallet_id: '',
+  receiver_numero: '',
   montant: '',
   devise: 'GNF',
   motif: '',
@@ -29,7 +29,7 @@ const INITIAL_FORM: FormState = {
 // ─── Validation ───────────────────────────────────────────────────────────────
 
 interface FormErrors {
-  receiver_wallet_id?: string
+  receiver_numero?: string
   montant?: string
   motif?: string
 }
@@ -37,14 +37,10 @@ interface FormErrors {
 function validateForm(form: FormState): FormErrors {
   const errors: FormErrors = {}
 
-  if (!form.receiver_wallet_id.trim()) {
-    errors.receiver_wallet_id = 'Identifiant du wallet destinataire obligatoire.'
-  } else {
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-    if (!uuidRegex.test(form.receiver_wallet_id.trim())) {
-      errors.receiver_wallet_id = 'Format invalide. Exemple : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-    }
+  if (!form.receiver_numero.trim()) {
+    errors.receiver_numero = 'Numéro de wallet destinataire obligatoire.'
+  } else if (!/^\d{9}$/.test(form.receiver_numero.trim())) {
+    errors.receiver_numero = 'Le numéro doit contenir exactement 9 chiffres.'
   }
 
   if (!form.montant.trim()) {
@@ -104,12 +100,12 @@ function BeneficiaryQuickPick({
               key={b.id}
               type="button"
               className={`w-100 text-start px-3 py-2 border-0 d-flex align-items-center gap-2 ${
-                selected === b.wallet_id
+                selected === b.wallet_numero
                   ? 'bg-primary bg-opacity-10'
                   : 'bg-white'
               }`}
               onClick={() => {
-                onSelect(b.wallet_id)
+                onSelect(b.wallet_numero)
                 setOpen(false)
               }}
             >
@@ -120,10 +116,10 @@ function BeneficiaryQuickPick({
                   <div className="text-muted" style={{ fontSize: '0.7rem' }}>{b.nickname}</div>
                 )}
                 <div className="font-monospace text-muted text-truncate" style={{ fontSize: '0.65rem' }}>
-                  {b.wallet_id}
+                  {b.wallet_numero}
                 </div>
               </div>
-              {selected === b.wallet_id && (
+              {selected === b.wallet_numero && (
                 <i className="bi bi-check-lg text-primary ms-auto flex-shrink-0" aria-hidden="true" />
               )}
             </button>
@@ -166,7 +162,7 @@ function SendForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const allTouched: Partial<Record<keyof FormState, boolean>> = {
-      receiver_wallet_id: true,
+      receiver_numero: true,
       montant: true,
       motif: true,
     }
@@ -182,31 +178,33 @@ function SendForm({
     <form onSubmit={handleSubmit} noValidate aria-label="Formulaire de transfert">
       {/* Destinataire */}
       <div className="mb-4">
-        <label htmlFor="receiver_wallet_id" className="form-label fw-semibold">
-          Wallet destinataire
+        <label htmlFor="receiver_numero" className="form-label fw-semibold">
+          Numéro de wallet destinataire
           <span className="text-danger ms-1" aria-hidden="true">*</span>
         </label>
         <input
-          id="receiver_wallet_id"
+          id="receiver_numero"
           type="text"
+          inputMode="numeric"
           className={`form-control form-control-lg font-monospace ${
-            touched.receiver_wallet_id && errors.receiver_wallet_id ? 'is-invalid' : ''
+            touched.receiver_numero && errors.receiver_numero ? 'is-invalid' : ''
           }`}
-          placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-          value={form.receiver_wallet_id}
-          onChange={set('receiver_wallet_id')}
-          onBlur={blur('receiver_wallet_id')}
+          placeholder="123456789"
+          maxLength={9}
+          value={form.receiver_numero}
+          onChange={set('receiver_numero')}
+          onBlur={blur('receiver_numero')}
           autoComplete="off"
           spellCheck={false}
           aria-describedby="receiver-help"
         />
-        {touched.receiver_wallet_id && errors.receiver_wallet_id ? (
+        {touched.receiver_numero && errors.receiver_numero ? (
           <div id="receiver-error" className="invalid-feedback" role="alert">
-            {errors.receiver_wallet_id}
+            {errors.receiver_numero}
           </div>
         ) : (
           <div id="receiver-help" className="form-text">
-            Identifiant unique du portefeuille du destinataire.
+            Numéro à 9 chiffres du portefeuille destinataire.
           </div>
         )}
       </div>
@@ -317,7 +315,7 @@ function ConfirmTransfer({
           <li className="list-group-item d-flex justify-content-between py-3">
             <span className="text-muted">Destinataire</span>
             <span className="font-monospace small text-end ms-3 text-break">
-              {form.receiver_wallet_id}
+              {form.receiver_numero}
             </span>
           </li>
           <li className="list-group-item d-flex justify-content-between py-3">
@@ -477,11 +475,11 @@ function TransferResult({
 
 export default function Send() {
   const location = useLocation()
-  const prefill = (location.state as { receiver_wallet_id?: string } | null)
-    ?.receiver_wallet_id ?? ''
+  const prefill = (location.state as { receiver_numero?: string } | null)
+    ?.receiver_numero ?? ''
 
   const [step, setStep] = useState<Step>('form')
-  const [form, setForm] = useState<FormState>({ ...INITIAL_FORM, receiver_wallet_id: prefill })
+  const [form, setForm] = useState<FormState>({ ...INITIAL_FORM, receiver_numero: prefill })
   const [result, setResult] = useState<Transaction | null>(null)
   // Idempotency key is generated once when entering 'confirm' step
   const idempotencyKeyRef = useRef<string | null>(null)
@@ -496,7 +494,7 @@ export default function Send() {
       return transactionsApi
         .transfer(
           {
-            receiver_wallet_id: form.receiver_wallet_id.trim(),
+            receiver_numero: form.receiver_numero.trim(),
             montant: form.montant.trim(),
             devise: form.devise,
             motif: form.motif.trim() || undefined,
@@ -568,9 +566,9 @@ export default function Send() {
       {step === 'form' && (
         <>
           <BeneficiaryQuickPick
-            selected={form.receiver_wallet_id}
+            selected={form.receiver_numero}
             onSelect={(walletId) =>
-              setForm((f) => ({ ...f, receiver_wallet_id: walletId }))
+              setForm((f) => ({ ...f, receiver_numero: walletId }))
             }
           />
           <SendForm form={form} onChange={setForm} onNext={handleGoToConfirm} />

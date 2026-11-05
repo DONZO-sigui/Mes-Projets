@@ -22,6 +22,10 @@ class WalletRepository:
         stmt = select(Wallet).where(Wallet.nif == nif.upper())
         return self.db.scalar(stmt)
 
+    def get_by_numero(self, numero: str) -> Wallet | None:
+        stmt = select(Wallet).where(Wallet.numero == numero)
+        return self.db.scalar(stmt)
+
     def list_all(self, offset: int = 0, limit: int = 50) -> list[Wallet]:
         stmt = select(Wallet).offset(offset).limit(limit).order_by(Wallet.created_at.desc())
         return list(self.db.scalars(stmt))

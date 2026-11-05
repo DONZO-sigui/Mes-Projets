@@ -16,7 +16,7 @@ class TransferRequest(BaseModel):
     Body de POST /transactions — le backend détermine sender_wallet
     depuis current_user.id. Le client ne fournit jamais sender_wallet_id.
     """
-    receiver_wallet_id: uuid.UUID
+    receiver_numero: str = Field(..., pattern=r"^\d{9}$", description="Numéro de wallet à 9 chiffres du destinataire")
     montant: Decimal = Field(..., gt=0, decimal_places=4)
     devise: str = Field("GNF", pattern="^(GNF|EUR|USD)$")
     motif: str | None = Field(None, max_length=250)

@@ -24,6 +24,7 @@ export interface User {
 
 export interface Wallet {
   id: string
+  numero: string
   nif: string
   nom: string
   prenom: string
@@ -76,7 +77,7 @@ export interface ApiError {
 }
 
 export interface TransferPayload {
-  receiver_wallet_id: string
+  receiver_numero: string
   montant: string
   devise: Devise
   motif?: string
@@ -97,6 +98,7 @@ export interface TransactionListParams {
 export interface Beneficiary {
   id: string
   wallet_id: string
+  wallet_numero: string
   name: string
   nickname: string | null
   created_at: string
@@ -173,4 +175,42 @@ export interface TransactionDetail {
   updated_at: string
   sender: WalletParty
   receiver: WalletParty
+}
+
+export interface BlockchainBlock {
+  id: string
+  index: number
+  hash: string
+  previous_hash: string
+  timestamp: string
+  nonce: number
+  difficulty: number
+  data: Record<string, unknown> | null
+  transaction_id: string | null
+  statut: string
+  created_at: string
+}
+
+export interface BlockchainStatus {
+  module: string
+  status: string
+  total_blocks: number
+  last_block_index: number | null
+  last_block_hash: string | null
+}
+
+export interface MNBCReserve {
+  id: string
+  devise: Devise
+  reserve: string
+  taux: string
+  statut: string
+  created_at: string
+  updated_at: string
+}
+
+export interface MNBCStatus {
+  module: string
+  status: string
+  reserves_actives: number
 }

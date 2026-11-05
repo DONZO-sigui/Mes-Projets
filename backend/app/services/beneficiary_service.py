@@ -61,8 +61,8 @@ class BeneficiaryService:
         current_user_id: uuid.UUID,
         data: BeneficiaryCreate,
     ) -> BeneficiaryResponse:
-        # Wallet existe ?
-        wallet = self.wallet_repo.get_by_id(data.wallet_id)
+        # Résolution numéro → wallet
+        wallet = self.wallet_repo.get_by_numero(data.wallet_numero)
         if wallet is None:
             raise BeneficiaryWalletNotFoundError(
                 "Le wallet destinataire est introuvable."
@@ -82,14 +82,14 @@ class BeneficiaryService:
             )
 
         # Doublon
-        if self.repo.exists_for_user_wallet(current_user_id, data.wallet_id):
+        if self.repo.exists_for_user_wallet(current_user_id, wallet.id):
             raise BeneficiaryDuplicateError(
                 "Ce wallet est déjà enregistré comme bénéficiaire."
             )
 
         benef = Beneficiary(
             user_id=current_user_id,
-            wallet_id=data.wallet_id,
+            wallet_id=wallet.id,
             name=data.name,
             nickname=data.nickname,
         )

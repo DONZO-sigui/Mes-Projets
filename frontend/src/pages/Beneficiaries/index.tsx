@@ -11,20 +11,16 @@ import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import type { Beneficiary, BeneficiaryCreate, BeneficiaryUpdate } from '../../types'
 
-// ─── UUID regex ───────────────────────────────────────────────
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
 // ─── BeneficiaryForm (create / edit) ─────────────────────────
 
 interface FormState {
-  wallet_id: string
+  wallet_numero: string
   name: string
   nickname: string
 }
 
 interface FormErrors {
-  wallet_id?: string
+  wallet_numero?: string
   name?: string
   nickname?: string
 }
@@ -35,11 +31,10 @@ function validateForm(
 ): FormErrors {
   const errors: FormErrors = {}
   if (!isEdit) {
-    if (!form.wallet_id.trim()) {
-      errors.wallet_id = 'Identifiant du wallet obligatoire.'
-    } else if (!UUID_RE.test(form.wallet_id.trim())) {
-      errors.wallet_id =
-        'Format invalide. Exemple : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+    if (!form.wallet_numero.trim()) {
+      errors.wallet_numero = 'Numéro de wallet obligatoire.'
+    } else if (!/^\d{9}$/.test(form.wallet_numero.trim())) {
+      errors.wallet_numero = 'Le numéro doit contenir exactement 9 chiffres.'
     }
   }
   if (!form.name.trim()) {

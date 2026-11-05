@@ -21,6 +21,7 @@ class WalletRead(BaseModel):
     model_config = {"from_attributes": True}
 
     id: uuid.UUID
+    numero: str
     nif: str
     nom: str
     prenom: str
@@ -36,6 +37,7 @@ class WalletSummary(BaseModel):
     model_config = {"from_attributes": True}
 
     id: uuid.UUID
+    numero: str
     nif: str
     nom: str
     prenom: str

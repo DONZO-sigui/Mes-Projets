@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class BeneficiaryCreate(BaseModel):
-    wallet_id: uuid.UUID
+    wallet_numero: str = Field(..., pattern=r"^\d{9}$", description="Numéro de wallet à 9 chiffres")
     name: str = Field(..., min_length=1, max_length=100)
     nickname: str | None = Field(None, max_length=50)
 
@@ -63,6 +63,7 @@ class BeneficiaryResponse(BaseModel):
 
     id: uuid.UUID
     wallet_id: uuid.UUID
+    wallet_numero: str
     name: str
     nickname: str | None
     created_at: datetime

@@ -40,6 +40,9 @@ class Wallet(Base):
     nif: Mapped[str] = mapped_column(
         String(20), unique=True, nullable=False, index=True
     )
+    numero: Mapped[str] = mapped_column(
+        String(9), unique=True, nullable=False, index=True
+    )
     nom: Mapped[str] = mapped_column(String(100), nullable=False)
     prenom: Mapped[str] = mapped_column(String(100), nullable=False)
     ville: Mapped[str | None] = mapped_column(String(100), nullable=True)

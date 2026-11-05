@@ -11,9 +11,11 @@ Toutes les opérations DB passent par les repositories.
 Les erreurs métier remontent comme exceptions Python ;
 le router les traduit en codes HTTP.
 """
+import random
 import uuid
 
 from jose import JWTError
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.security import (
@@ -60,6 +62,16 @@ class InvalidRefreshTokenError(Exception):
 def _generate_nif(user_id: uuid.UUID) -> str:
     """Génère un NIF unique basé sur l'UUID utilisateur (max 20 chars)."""
     return "GNF" + user_id.hex[:12].upper()
+
+
+def _generate_numero(db: Session) -> str:
+    """Génère un numéro de wallet unique à 9 chiffres."""
+    from app.models.wallet import Wallet
+    while True:
+        numero = str(random.randint(100_000_000, 999_999_999))
+        exists = db.scalar(select(Wallet).where(Wallet.numero == numero))
+        if exists is None:
+            return numero
 
 
 def _build_token_response(
@@ -141,6 +153,7 @@ class AuthService:
         wallet = Wallet(
             user_id=user.id,
             nif=_generate_nif(user.id),
+            numero=_generate_numero(self.db),
             nom=data.last_name,
             prenom=data.first_name,
             devise="GNF",

@@ -72,6 +72,10 @@ class Beneficiary(Base):
         lazy="select",
     )
 
+    @property
+    def wallet_numero(self) -> str:
+        return self.wallet.numero
+
     def __repr__(self) -> str:
         return (
             f"<Beneficiary name={self.name!r}"

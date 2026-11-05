@@ -103,6 +103,15 @@ def create_transfer(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> TransactionRead:
+    # Résolution du numéro 9 chiffres → wallet UUID
+    wallet_repo = WalletRepository(db)
+    receiver_wallet = wallet_repo.get_by_numero(body.receiver_numero)
+    if receiver_wallet is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Wallet destinataire introuvable.",
+        )
+
     svc = TransactionService(db)
     pre_existing = TransactionRepository(db).get_by_idempotency_key(
         idempotency_key
@@ -111,7 +120,7 @@ def create_transfer(
     try:
         tx = svc.transfer(
             sender_user_id=current_user.id,
-            receiver_wallet_id=body.receiver_wallet_id,
+            receiver_wallet_id=receiver_wallet.id,
             montant=body.montant,
             devise=body.devise,
             idempotency_key=idempotency_key,
