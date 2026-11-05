@@ -1,8 +1,23 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.api.v1.router import api_router
+from app.db.base import Base
+from app.db.session import engine
+import app.models  # noqa: F401
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Auto-create tables on startup (idempotent, safe for PostgreSQL)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        print(f"[DB] Table creation error (will retry on query): {e}")
+    yield
+
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -17,6 +32,7 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
     debug=settings.APP_DEBUG,
+    lifespan=lifespan,
 )
 
 register_exception_handlers(app)
