@@ -3,7 +3,20 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 
-const BASE_URL = import.meta.env['VITE_API_BASE_URL'] ?? '/api/v1'
+function getBaseUrl(): string {
+  const envUrl = import.meta.env['VITE_API_BASE_URL']
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+    const trimmed = envUrl.trim()
+    // Si une URL de base de données PostgreSQL a été entrée par erreur, on l'ignore
+    if (trimmed.startsWith('postgres://') || trimmed.startsWith('postgresql://')) {
+      return '/api/v1'
+    }
+    return trimmed
+  }
+  return '/api/v1'
+}
+
+const BASE_URL = getBaseUrl()
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
