@@ -13,6 +13,7 @@ export type TransactionStatus =
 export interface User {
   id: string
   email: string
+  phone_number: string | null
   first_name: string
   last_name: string
   role: UserRole

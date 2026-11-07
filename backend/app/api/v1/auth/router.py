@@ -26,6 +26,7 @@ from app.services.auth_service import (
     AccountInactiveError,
     AuthService,
     DuplicateEmailError,
+    DuplicatePhoneError,
     InvalidCredentialsError,
     InvalidRefreshTokenError,
 )
@@ -54,6 +55,12 @@ def register(
         db.commit()
         return result
     except DuplicateEmailError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(exc),
+        )
+    except DuplicatePhoneError as exc:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

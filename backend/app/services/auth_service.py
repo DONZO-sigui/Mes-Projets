@@ -47,6 +47,10 @@ class DuplicateEmailError(Exception):
     pass
 
 
+class DuplicatePhoneError(Exception):
+    pass
+
+
 class InvalidCredentialsError(Exception):
     pass
 
@@ -138,10 +142,19 @@ class AuthService:
                 f"L'adresse e-mail '{data.email}' est déjà utilisée."
             )
 
+        existing_phone = self.db.scalar(
+            select(User).where(User.phone_number == data.phone_number)
+        )
+        if existing_phone is not None:
+            raise DuplicatePhoneError(
+                "Ce numéro de téléphone est déjà associé à un compte."
+            )
+
         validate_password_policy(data.password)
 
         user = User(
             email=data.email,
+            phone_number=data.phone_number,
             password_hash=hash_password(data.password),
             first_name=data.first_name,
             last_name=data.last_name,

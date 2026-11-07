@@ -9,6 +9,7 @@ class UserCreate(BaseModel):
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
     devise: str = Field("GNF", pattern="^(GNF|EUR|USD|GBP|XOF)$")
+    phone_number: str = Field(..., pattern=r"^\+[1-9]\d{6,14}$", description="Format E.164 : +22465123456")
 
     @field_validator("email")
     @classmethod
@@ -28,6 +29,7 @@ class UserResponse(BaseModel):
 
     id: uuid.UUID
     email: str
+    phone_number: str | None
     first_name: str
     last_name: str
     role: str

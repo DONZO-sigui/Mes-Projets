@@ -7,6 +7,7 @@ export interface RegisterPayload {
   first_name: string
   last_name: string
   devise: string
+  phone_number: string
 }
 
 export interface LoginPayload {

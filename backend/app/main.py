@@ -10,6 +10,9 @@ from app.db.session import engine
 import app.models  # noqa: F401
 
 _MIGRATIONS = [
+    # Add phone_number to users
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20)",
+    "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_phone_number ON users (phone_number) WHERE phone_number IS NOT NULL",
     # Add cross-currency columns to transactions
     "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS receiver_devise VARCHAR(3)",
     "ALTER TABLE transactions ADD COLUMN IF NOT EXISTS montant_converti NUMERIC(18,4)",
