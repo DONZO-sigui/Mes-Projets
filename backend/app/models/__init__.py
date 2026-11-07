@@ -8,3 +8,4 @@ from app.models.blockchain import Block  # noqa: F401
 from app.models.mnbc import MNBCReserve  # noqa: F401
 from app.models.beneficiary import Beneficiary  # noqa: F401
 from app.models.notification import Notification  # noqa: F401
+from app.models.password_reset_token import PasswordResetToken  # noqa: F401

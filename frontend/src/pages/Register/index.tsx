@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/useAuth'
 import { authApi } from '../../api/auth.api'
 import { ErrorMessage } from '../../components/ErrorMessage'
+import { AuthAnimatedBg } from '../../components/AuthAnimatedBg'
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -36,6 +37,7 @@ export default function Register() {
 
   return (
     <div className="auth-wrapper">
+      <AuthAnimatedBg />
       <div className="auth-card">
         {/* Brand Icon Header */}
         <div className="auth-brand-badge">

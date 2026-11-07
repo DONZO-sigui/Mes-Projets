@@ -3,6 +3,7 @@ import { ProtectedRoute } from '../auth/ProtectedRoute'
 import MainLayout from '../layouts/MainLayout'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
+import ResetPassword from '../pages/ResetPassword'
 import Dashboard from '../pages/Dashboard'
 import Wallet from '../pages/Wallet'
 import Transactions from '../pages/Transactions'
@@ -19,6 +20,7 @@ export default function AppRouter() {
       {/* Public */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Protected */}
       <Route element={<ProtectedRoute />}>

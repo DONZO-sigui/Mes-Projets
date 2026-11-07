@@ -27,4 +27,10 @@ export const authApi = {
     apiClient.post<void>('/auth/logout', { refresh_token }),
 
   me: () => apiClient.get<User>('/auth/me'),
+
+  forgotPassword: (email: string) =>
+    apiClient.post<void>('/auth/forgot-password', { email }),
+
+  resetPassword: (token: string, new_password: string) =>
+    apiClient.post<void>('/auth/reset-password', { token, new_password }),
 }

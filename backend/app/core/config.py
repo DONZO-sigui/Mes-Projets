@@ -43,5 +43,13 @@ class Settings(BaseSettings):
 
     REDIS_URL: str = ""
 
+    # Email (SMTP) — laisser vide pour log console en dev
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    EMAIL_FROM: str = "noreply@gnftoken.com"
+    FRONTEND_URL: str = "https://guineediaspo.netlify.app"
+
 
 settings = Settings()

@@ -14,9 +14,11 @@ from app.core.dependencies import get_current_user
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.auth import (
+    ForgotPasswordRequest,
     LoginRequest,
     LogoutRequest,
     RefreshTokenRequest,
+    ResetPasswordRequest,
     TokenResponse,
 )
 from app.schemas.user import UserCreate, UserResponse
@@ -154,6 +156,45 @@ def logout(
     service = AuthService(db)
     service.logout(data.refresh_token)
     db.commit()
+
+
+# ─── POST /auth/forgot-password ─────────────────────────────
+
+@router.post(
+    "/forgot-password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Demande de réinitialisation du mot de passe",
+)
+def forgot_password(
+    data: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+) -> None:
+    service = AuthService(db)
+    service.forgot_password(data.email)
+    db.commit()
+
+
+# ─── POST /auth/reset-password ───────────────────────────────
+
+@router.post(
+    "/reset-password",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Réinitialisation du mot de passe avec token",
+)
+def reset_password(
+    data: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+) -> None:
+    service = AuthService(db)
+    try:
+        service.reset_password(data.token, data.new_password)
+        db.commit()
+    except ValueError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        )
 
 
 # ─── GET /auth/me ────────────────────────────────────────────

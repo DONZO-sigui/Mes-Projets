@@ -71,6 +71,12 @@ class User(Base):
         cascade="all, delete-orphan",
         lazy="select",
     )
+    password_reset_tokens: Mapped[list["PasswordResetToken"]] = relationship(  # noqa: F821
+        "PasswordResetToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        lazy="select",
+    )
 
     @property
     def is_active(self) -> bool:

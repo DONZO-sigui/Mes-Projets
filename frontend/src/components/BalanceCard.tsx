@@ -40,17 +40,16 @@ export function BalanceCard({ wallet, isLoading, error, onSend }: Props) {
 
   return (
     <>
-      <div className="card border-0 shadow-sm text-white bg-primary rounded-4">
+      <div className="gnf-balance-card">
         <div className="card-body p-4">
           <div className="d-flex justify-content-between align-items-start mb-3">
             <div>
-              <p className="mb-0 small opacity-75 text-uppercase fw-semibold tracking-wide">
-                Solde disponible
-              </p>
-              <p className="mb-0 small opacity-75">{wallet?.devise ?? 'GNF'}</p>
+              <p className="gnf-balance-label mb-0">Solde disponible</p>
+              <p className="gnf-balance-currency">{wallet?.devise ?? 'GNF'}</p>
             </div>
             <button
-              className="btn btn-link text-white p-0 opacity-75"
+              className="btn btn-link p-0"
+              style={{ color: 'rgba(255,255,255,0.65)' }}
               onClick={() => setHidden((h) => !h)}
               aria-label={hidden ? 'Afficher le solde' : 'Masquer le solde'}
             >
@@ -74,12 +73,10 @@ export function BalanceCard({ wallet, isLoading, error, onSend }: Props) {
           ) : null}
           {wallet && !isLoading && (
             <p
-              className="display-6 fw-bold mb-0"
+              className="gnf-balance-amount mb-0"
               aria-label={`Solde : ${formatAmount(wallet.solde, wallet.devise)}`}
             >
-              {hidden
-                ? '••••••'
-                : formatAmount(wallet.solde, wallet.devise)}
+              {hidden ? '••••••' : formatAmount(wallet.solde, wallet.devise)}
             </p>
           )}
 
@@ -87,7 +84,7 @@ export function BalanceCard({ wallet, isLoading, error, onSend }: Props) {
             <div className="mt-4 d-flex flex-wrap gap-2">
               {onSend && (
                 <button
-                  className="btn btn-light btn-sm fw-semibold px-4"
+                  className="btn gnf-balance-btn-send btn-sm"
                   onClick={onSend}
                   aria-label="Envoyer de l'argent"
                 >
@@ -96,7 +93,7 @@ export function BalanceCard({ wallet, isLoading, error, onSend }: Props) {
                 </button>
               )}
               <button
-                className="btn btn-outline-light btn-sm fw-semibold px-4"
+                className="btn gnf-balance-btn-topup btn-sm"
                 onClick={() => setShowTopUp(true)}
                 aria-label="Recharger le compte"
               >

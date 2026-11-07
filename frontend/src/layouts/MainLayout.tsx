@@ -36,7 +36,7 @@ export default function MainLayout() {
         <div className="container-fluid">
           <span className="navbar-brand fw-bold">
             <i className="bi bi-bank2 me-2" aria-hidden="true" />
-            GNF-Token
+            <span className="brand-gold">GNF</span>-Token
           </span>
 
           <button
@@ -109,8 +109,8 @@ export default function MainLayout() {
       </main>
 
       {/* ── Footer (desktop only) ─────────────────────────────────── */}
-      <footer className="bg-light text-center text-muted py-2 small d-none d-md-block">
-        GNF-Token Dashboard v0.2 — usage interne uniquement
+      <footer className="gnf-footer text-center d-none d-md-block">
+        <span className="brand-gold fw-semibold">GNF</span>-Token · Plateforme sécurisée BCRG · v0.2
       </footer>
 
       {/* ── Mobile bottom navigation ──────────────────────────────── */}

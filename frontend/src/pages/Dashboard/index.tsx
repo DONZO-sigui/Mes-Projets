@@ -44,12 +44,23 @@ export default function Dashboard() {
     queryFn: () => notificationsApi.list(1, 3).then((r) => r.data),
   })
 
+  const today = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  })
+
   return (
     <div>
-      {/* Salutation */}
-      <h1 className="h4 fw-bold mb-4">
-        Bonjour, {user?.first_name} 👋
-      </h1>
+      {/* Greeting */}
+      <div className="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <p className="mb-0 small fw-medium" style={{ color: 'var(--gnf-text-muted)', textTransform: 'capitalize' }}>
+            {today}
+          </p>
+          <h1 className="h5 fw-bold mb-0" style={{ letterSpacing: '-0.02em' }}>
+            Bonjour, {user?.first_name} 👋
+          </h1>
+        </div>
+      </div>
 
       {/* Balance card */}
       <div className="mb-4">
@@ -70,30 +81,45 @@ export default function Dashboard() {
       )}
 
       {/* Quick actions */}
-      <div className="row g-3 mb-4">
+      <p className="gnf-section-title">Actions rapides</p>
+      <div className="row g-2 mb-4">
         <div className="col-6">
-          <Link
-            to="/send"
-            className="btn btn-primary w-100 py-3 d-flex flex-column align-items-center gap-1"
-          >
-            <i className="bi bi-send fs-4" aria-hidden="true" />
-            <span className="small fw-semibold">Envoyer</span>
+          <Link to="/send" className="gnf-quick-action primary-action w-100">
+            <div className="action-icon">
+              <i className="bi bi-send" aria-hidden="true" />
+            </div>
+            <span>Envoyer</span>
           </Link>
         </div>
         <div className="col-6">
-          <Link
-            to="/transactions"
-            className="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-1"
-          >
-            <i className="bi bi-clock-history fs-4" aria-hidden="true" />
-            <span className="small fw-semibold">Historique</span>
+          <Link to="/transactions" className="gnf-quick-action w-100">
+            <div className="action-icon" style={{ background: 'var(--gnf-bg)', color: 'var(--gnf-blue)' }}>
+              <i className="bi bi-clock-history" aria-hidden="true" />
+            </div>
+            <span>Historique</span>
+          </Link>
+        </div>
+        <div className="col-6">
+          <Link to="/beneficiaries" className="gnf-quick-action w-100">
+            <div className="action-icon" style={{ background: 'var(--gnf-gold-light)', color: 'var(--gnf-gold-dark)' }}>
+              <i className="bi bi-people" aria-hidden="true" />
+            </div>
+            <span>Bénéficiaires</span>
+          </Link>
+        </div>
+        <div className="col-6">
+          <Link to="/wallet" className="gnf-quick-action w-100">
+            <div className="action-icon" style={{ background: 'var(--gnf-success-bg)', color: 'var(--gnf-success)' }}>
+              <i className="bi bi-wallet2" aria-hidden="true" />
+            </div>
+            <span>Portefeuille</span>
           </Link>
         </div>
       </div>
 
       {/* Recent notifications */}
       {notifQuery.data && notifQuery.data.items.length > 0 && (
-        <div className="card border-0 shadow-sm mb-4">
+        <div className="card mb-4">
           <div className="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
             <h2 className="h6 mb-0 fw-semibold">
               Notifications récentes
@@ -131,7 +157,7 @@ export default function Dashboard() {
       )}
 
       {/* Recent transactions */}
-      <div className="card border-0 shadow-sm">
+      <div className="card">
         <div className="card-header bg-transparent d-flex justify-content-between align-items-center py-3">
           <h2 className="h6 mb-0 fw-semibold">
             Dernières transactions

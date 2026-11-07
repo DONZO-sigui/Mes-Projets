@@ -12,10 +12,12 @@ Les erreurs métier remontent comme exceptions Python ;
 le router les traduit en codes HTTP.
 """
 import random
+import secrets
 import uuid
+from datetime import datetime, timedelta, timezone
 
 from jose import JWTError
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core.security import (
@@ -295,6 +297,89 @@ class AuthService:
         except (JWTError, Exception):
             # Toujours 200 — ne pas révéler l'état du token au client
             pass
+
+    # ── Mot de passe oublié ───────────────────────────────────
+
+    def forgot_password(self, email: str) -> None:
+        """
+        Génère un token de réinitialisation et envoie l'e-mail.
+        Silencieux si l'e-mail est inconnu (prévient l'énumération).
+        """
+        from app.core.email import send_password_reset_email
+        from app.core.security import hash_token
+        from app.models.password_reset_token import PasswordResetToken
+
+        user = self.user_repo.get_by_email(email)
+        if user is None or not user.is_active:
+            return  # réponse constante — pas d'énumération
+
+        # Invalider les tokens précédents non consommés
+        self.db.execute(
+            update(PasswordResetToken)
+            .where(
+                PasswordResetToken.user_id == user.id,
+                PasswordResetToken.is_used.is_(False),
+            )
+            .values(is_used=True)
+        )
+
+        token_raw = secrets.token_urlsafe(32)
+        expires_at = datetime.now(tz=timezone.utc) + timedelta(hours=1)
+
+        prt = PasswordResetToken(
+            user_id=user.id,
+            token_hash=hash_token(token_raw),
+            expires_at=expires_at,
+        )
+        self.db.add(prt)
+        self.db.flush()
+
+        from app.core.config import settings
+        reset_url = (
+            f"{settings.FRONTEND_URL}/reset-password?token={token_raw}"
+        )
+        send_password_reset_email(user.email, reset_url, user.first_name)
+
+    # ── Réinitialisation du mot de passe ──────────────────────
+
+    def reset_password(self, token_raw: str, new_password: str) -> None:
+        """
+        Applique le nouveau mot de passe si le token est valide.
+        Révoque toutes les sessions actives (sécurité).
+        """
+        from app.core.security import (
+            hash_password,
+            hash_token,
+            validate_password_policy,
+        )
+        from app.models.password_reset_token import PasswordResetToken
+
+        token_hash = hash_token(token_raw)
+        prt = self.db.scalar(
+            select(PasswordResetToken).where(
+                PasswordResetToken.token_hash == token_hash,
+                PasswordResetToken.is_used.is_(False),
+            )
+        )
+
+        if prt is None:
+            raise ValueError("Lien de réinitialisation invalide ou déjà utilisé.")
+
+        if prt.expires_at < datetime.now(tz=timezone.utc):
+            raise ValueError("Ce lien a expiré. Veuillez en demander un nouveau.")
+
+        validate_password_policy(new_password)
+
+        user = self.user_repo.get_by_id(prt.user_id)
+        if user is None or not user.is_active:
+            raise ValueError("Compte introuvable ou désactivé.")
+
+        user.password_hash = hash_password(new_password)
+        prt.is_used = True
+
+        # Révoquer toutes les sessions — force la reconnexion
+        self.rt_repo.revoke_all_for_user(user.id)
+        self.db.flush()
 
     # ── Helpers privés ────────────────────────────────────────
 

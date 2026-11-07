@@ -11,7 +11,7 @@ const NAV_ITEMS = [
 export function MobileBottomNav() {
   return (
     <nav
-      className="d-md-none fixed-bottom bg-white border-top safe-area-bottom"
+      className="d-md-none fixed-bottom gnf-bottom-nav safe-area-bottom"
       aria-label="Navigation principale"
       style={{ zIndex: 1030 }}
     >
