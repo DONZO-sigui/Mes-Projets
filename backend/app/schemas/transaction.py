@@ -11,6 +11,9 @@ class WalletPartyInfo(BaseModel):
     prenom: str
 
 
+_DEVISES_PATTERN = "^(GNF|EUR|USD|GBP|XOF)$"
+
+
 class TransferRequest(BaseModel):
     """
     Body de POST /transactions — le backend détermine sender_wallet
@@ -18,7 +21,7 @@ class TransferRequest(BaseModel):
     """
     receiver_numero: str = Field(..., pattern=r"^\d{9}$", description="Numéro de wallet à 9 chiffres du destinataire")
     montant: Decimal = Field(..., gt=0, decimal_places=4)
-    devise: str = Field("GNF", pattern="^(GNF|EUR|USD)$")
+    devise: str = Field("GNF", pattern=_DEVISES_PATTERN)
     motif: str | None = Field(None, max_length=250)
 
 
@@ -27,7 +30,7 @@ class TransactionCreate(BaseModel):
     sender_wallet_id: uuid.UUID
     receiver_wallet_id: uuid.UUID
     montant: Decimal = Field(..., gt=0, decimal_places=4)
-    devise: str = Field("GNF", pattern="^(GNF|EUR|USD)$")
+    devise: str = Field("GNF", pattern=_DEVISES_PATTERN)
     motif: str | None = Field(None, max_length=250)
     idempotency_key: str = Field(..., min_length=8, max_length=100)
 
@@ -43,6 +46,9 @@ class TransactionRead(BaseModel):
     devise: str
     frais: Decimal
     montant_total: Decimal
+    receiver_devise: str | None
+    montant_converti: Decimal | None
+    taux_applique: Decimal | None
     statut: str
     motif: str | None
     idempotency_key: str
@@ -62,6 +68,9 @@ class TransactionDetailResponse(BaseModel):
     frais: Decimal
     montant_total: Decimal
     devise: str
+    receiver_devise: str | None
+    montant_converti: Decimal | None
+    taux_applique: Decimal | None
     statut: str
     motif: str | None
     confirmed_at: datetime | None
@@ -103,7 +112,7 @@ class TransactionListParams:
         ),
         devise: str | None = Query(
             None,
-            pattern="^(GNF|EUR|USD)$",
+            pattern="^(GNF|EUR|USD|GBP|XOF)$",
             description="Filtrer par devise",
         ),
         date_from: datetime | None = Query(

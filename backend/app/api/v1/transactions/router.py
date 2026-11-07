@@ -53,6 +53,7 @@ from app.schemas.transaction import (
 from app.services.notification_service import NotificationService
 from app.services.transaction_service import (
     CurrencyMismatchError,
+    ExchangeRateError,
     IdempotencyConflictError,
     InsufficientFundsError,
     SelfTransferError,
@@ -149,6 +150,11 @@ def create_transfer(
     except CurrencyMismatchError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
+            detail=str(e),
+        )
+    except ExchangeRateError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(e),
         )
     except InsufficientFundsError as e:
@@ -299,6 +305,9 @@ def get_transaction_detail(
         frais=tx.frais,
         montant_total=tx.montant_total,
         devise=tx.devise,
+        receiver_devise=tx.receiver_devise,
+        montant_converti=tx.montant_converti,
+        taux_applique=tx.taux_applique,
         statut=tx.statut,
         motif=tx.motif,
         confirmed_at=tx.confirmed_at,

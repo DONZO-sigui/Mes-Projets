@@ -24,7 +24,7 @@ class LedgerEntry(Base):
             name="ck_ledger_entries_type_mouvement",
         ),
         CheckConstraint(
-            "devise IN ('GNF','EUR','USD')",
+            "devise IN ('GNF','EUR','USD','GBP','XOF')",
             name="ck_ledger_entries_devise",
         ),
         CheckConstraint(

@@ -18,7 +18,7 @@ class MNBCReserve(Base):
     __tablename__ = "mnbc_reserves"
     __table_args__ = (
         CheckConstraint(
-            "devise IN ('GNF','EUR','USD')",
+            "devise IN ('GNF','EUR','USD','GBP','XOF')",
             name="ck_mnbc_reserves_devise",
         ),
         CheckConstraint(

@@ -1,41 +1,46 @@
 """
 TransactionService — moteur de transaction financière sécurisé.
 
-Convention frais (ÉTAPE 6) :
-    frais = 0  (moteur de frais non encore défini)
-    montant_total = montant + frais  (débité du sender)
-    montant crédité au receiver = montant
+Frais :
+    - Même devise   : 0,5 % du montant (min. 500 GNF équivalent)
+    - Cross-devise  : 1,5 % du montant (min. 500 GNF équivalent)
 
-Convention verrouillage (anti-deadlock) :
-    Les deux wallets sont verrouillés dans l'ordre croissant de leur UUID
-    afin que deux transferts simultanés A→B et B→A acquièrent les verrous
-    dans le même ordre.
+Conversion :
+    taux stocké dans MNBCReserve.taux = "1 unité = X GNF"
+    montant_converti = montant * taux_sender / taux_receiver
 
-Transitions autorisées :
-    PENDING → COMPLETED  (succès)
-    PENDING → FAILED     (erreur métier ou technique)
-    COMPLETED → REVERSED (remboursement — étape future)
+Verrouillage anti-deadlock :
+    Les deux wallets sont verrouillés dans l'ordre croissant de leur UUID.
 """
 import uuid
 import secrets
 from datetime import datetime, timezone
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.ledger import LedgerEntry
+from app.models.mnbc import MNBCReserve
 from app.models.transaction import Transaction
 from app.repositories.ledger_repository import LedgerRepository
 from app.repositories.transaction_repository import TransactionRepository
 from app.repositories.wallet_repository import WalletRepository
 
-DEVISES_VALIDES = {"GNF", "EUR", "USD"}
+DEVISES_VALIDES = {"GNF", "EUR", "USD", "GBP", "XOF"}
+
+_TAUX_FRAIS_MEME = Decimal("0.005")   # 0,5 % même devise
+_TAUX_FRAIS_CROSS = Decimal("0.015")  # 1,5 % cross-devise
+_MIN_FRAIS_GNF = Decimal("500")       # plancher tarifaire en GNF
 
 
 def _generate_reference() -> str:
-    """Référence métier unique : TXN-{16 hex chars}."""
     return "TXN-" + secrets.token_hex(8).upper()
+
+
+def _q(value: Decimal, places: str = "0.0001") -> Decimal:
+    return value.quantize(Decimal(places), rounding=ROUND_HALF_UP)
 
 
 class InsufficientFundsError(Exception):
@@ -55,6 +60,11 @@ class SelfTransferError(Exception):
 
 
 class CurrencyMismatchError(Exception):
+    pass
+
+
+class ExchangeRateError(Exception):
+    """Taux de change indisponible pour cette devise."""
     pass
 
 
@@ -81,7 +91,48 @@ class TransactionService:
     def count(self) -> int:
         return self.tx_repo.count()
 
-    # ─── Transfert financier ────────────────────────────────────
+    # ─── Helpers taux / frais ─────────────────────────────────────
+
+    def _get_taux(self, devise: str) -> Decimal:
+        """1 unité de `devise` = retourne X GNF. GNF → toujours 1."""
+        if devise == "GNF":
+            return Decimal("1")
+        reserve = self.db.scalar(
+            select(MNBCReserve).where(
+                MNBCReserve.devise == devise,
+                MNBCReserve.statut == "ACTIVE",
+            )
+        )
+        if reserve is None:
+            raise ExchangeRateError(
+                f"Taux de change indisponible pour {devise}."
+            )
+        return reserve.taux
+
+    def _compute_frais(
+        self,
+        montant: Decimal,
+        sender_devise: str,
+        receiver_devise: str,
+        taux_sender: Decimal,
+    ) -> Decimal:
+        """Frais en sender_devise avec plancher 500 GNF équivalent."""
+        is_cross = sender_devise != receiver_devise
+        pct = _TAUX_FRAIS_CROSS if is_cross else _TAUX_FRAIS_MEME
+        frais_raw = _q(montant * pct)
+        min_frais = _q(_MIN_FRAIS_GNF / taux_sender)
+        return max(frais_raw, min_frais)
+
+    def _convert(
+        self,
+        montant: Decimal,
+        taux_from: Decimal,
+        taux_to: Decimal,
+    ) -> Decimal:
+        """Convertit montant via GNF : montant * taux_from / taux_to."""
+        return _q(montant * taux_from / taux_to)
+
+    # ─── Transfert financier ─────────────────────────────────────
 
     def transfer(
         self,
@@ -93,20 +144,18 @@ class TransactionService:
         motif: str | None = None,
     ) -> Transaction:
         """
-        Transfert atomique sécurisé entre deux wallets.
+        Transfert atomique multi-devises.
 
-        1. Idempotence : si la clé existe déjà → retourne la transaction existante
-           (ou lève IdempotencyConflictError si le payload diffère).
-        2. SELECT FOR UPDATE dans l'ordre déterministe des UUID (anti-deadlock).
-        3. Validation : ownership, statut, devise, solde, sender ≠ receiver.
-        4. Écriture atomique : Transaction + 2 LedgerEntry + update soldes.
-        5. db.flush() — le commit est délégué au router.
+        1. Idempotence : clé déjà vue → retourne la tx existante.
+        2. SELECT FOR UPDATE dans l'ordre UUID (anti-deadlock).
+        3. Validation : ownership, statut, devise sender, solde.
+        4. Conversion cross-devise via MNBCReserve.taux.
+        5. Écriture atomique : Transaction + 2 LedgerEntry + soldes.
         """
 
-        # ── 1. Idempotence ──────────────────────────────────────
+        # ── 1. Idempotence ───────────────────────────────────────
         existing = self.tx_repo.get_by_idempotency_key(idempotency_key)
         if existing is not None:
-            # Vérifie que le payload est cohérent avec la transaction existante
             if (
                 existing.receiver_wallet_id != receiver_wallet_id
                 or existing.montant != montant
@@ -117,12 +166,12 @@ class TransactionService:
                 )
             return existing
 
-        # ── 2. Résolution du wallet expéditeur (ownership) ──────
+        # ── 2. Résolution du wallet expéditeur ───────────────────
         sender_wallet = self.wallet_repo.get_by_user_id(sender_user_id)
         if sender_wallet is None:
             raise WalletNotFoundError("Wallet expéditeur introuvable.")
 
-        # ── 3. Validation pre-lock ───────────────────────────────
+        # ── 3. Validations pre-lock ───────────────────────────────
         if sender_wallet.id == receiver_wallet_id:
             raise SelfTransferError(
                 "L'expéditeur et le destinataire ne peuvent pas être identiques."
@@ -132,7 +181,7 @@ class TransactionService:
         if montant <= Decimal("0"):
             raise ValueError("Le montant doit être strictement positif.")
 
-        # ── 4. SELECT FOR UPDATE dans l'ordre déterministe ──────
+        # ── 4. SELECT FOR UPDATE ordre déterministe ───────────────
         ids_sorted = sorted([sender_wallet.id, receiver_wallet_id])
         first = self.wallet_repo.get_for_update(ids_sorted[0])
         second = self.wallet_repo.get_for_update(ids_sorted[1])
@@ -140,77 +189,73 @@ class TransactionService:
         if first is None or second is None:
             raise WalletNotFoundError("Un des wallets est introuvable.")
 
-        # Réassignation sémantique après lock
         if sender_wallet.id == ids_sorted[0]:
             sender_locked, receiver_locked = first, second
         else:
             sender_locked, receiver_locked = second, first
 
-        # ── 5. Validations post-lock ─────────────────────────────
+        # ── 5. Validations post-lock ──────────────────────────────
         if sender_locked.statut != "ACTIVE":
-            raise WalletInactiveError(
-                f"Wallet expéditeur {sender_locked.statut}."
-            )
+            raise WalletInactiveError(f"Wallet expéditeur {sender_locked.statut}.")
         if receiver_locked.statut != "ACTIVE":
-            raise WalletInactiveError(
-                f"Wallet destinataire {receiver_locked.statut}."
-            )
+            raise WalletInactiveError(f"Wallet destinataire {receiver_locked.statut}.")
         if sender_locked.devise != devise:
             raise CurrencyMismatchError(
-                f"Devise du wallet expéditeur ({sender_locked.devise}) "
-                f"incompatible avec la devise de la transaction ({devise})."
-            )
-        if receiver_locked.devise != devise:
-            raise CurrencyMismatchError(
-                f"Devise du wallet destinataire ({receiver_locked.devise}) "
-                f"incompatible avec la devise de la transaction ({devise})."
+                f"Votre wallet est en {sender_locked.devise}, "
+                f"mais la devise demandée est {devise}."
             )
 
-        frais = Decimal("0.0000")
-        montant_total = montant + frais  # total débité du sender
+        sender_devise = sender_locked.devise
+        receiver_devise = receiver_locked.devise
+
+        # ── 6. Taux de change et frais ────────────────────────────
+        taux_sender = self._get_taux(sender_devise)
+        taux_receiver = self._get_taux(receiver_devise)
+
+        frais = self._compute_frais(montant, sender_devise, receiver_devise, taux_sender)
+        montant_total = _q(montant + frais)
 
         if sender_locked.solde < montant_total:
             raise InsufficientFundsError(
                 f"Solde insuffisant : disponible {sender_locked.solde} "
-                f"{devise}, requis {montant_total} {devise}."
+                f"{sender_devise}, requis {montant_total} {sender_devise}."
             )
 
-        # ── 6–8. Écriture atomique : Transaction + Ledger + Soldes ──
-        #
-        # En cas de race condition (deux requêtes avec la même
-        # idempotency_key passent le contrôle pré-lock simultanément),
-        # PostgreSQL lève une IntegrityError sur la contrainte UNIQUE.
-        # On rollback, on re-lit la transaction existante et on la retourne
-        # sans avoir effectué de deuxième débit.
+        montant_converti = self._convert(montant, taux_sender, taux_receiver)
+
+        # ── 7. Écriture atomique ──────────────────────────────────
         try:
             tx = Transaction(
                 reference=_generate_reference(),
                 sender_wallet_id=sender_locked.id,
                 receiver_wallet_id=receiver_locked.id,
                 montant=montant,
-                devise=devise,
+                devise=sender_devise,
                 frais=frais,
                 montant_total=montant_total,
+                receiver_devise=receiver_devise,
+                montant_converti=montant_converti,
+                taux_applique=taux_sender,
                 statut="COMPLETED",
                 motif=motif,
                 idempotency_key=idempotency_key,
                 confirmed_at=datetime.now(timezone.utc),
             )
-            self.tx_repo.create(tx)  # flush — peut lever IntegrityError
+            self.tx_repo.create(tx)
 
             debit = LedgerEntry(
                 transaction_id=tx.id,
                 wallet_id=sender_locked.id,
                 type_mouvement="DEBIT",
                 montant=montant_total,
-                devise=devise,
+                devise=sender_devise,
             )
             credit = LedgerEntry(
                 transaction_id=tx.id,
                 wallet_id=receiver_locked.id,
                 type_mouvement="CREDIT",
-                montant=montant,
-                devise=devise,
+                montant=montant_converti,
+                devise=receiver_devise,
             )
             self.ledger_repo.create_pair(debit, credit)
 
@@ -218,17 +263,14 @@ class TransactionService:
                 sender_locked, sender_locked.solde - montant_total
             )
             self.wallet_repo.update_solde(
-                receiver_locked, receiver_locked.solde + montant
+                receiver_locked, receiver_locked.solde + montant_converti
             )
 
             return tx
 
         except IntegrityError:
-            # Race condition sur idempotency_key :
-            # un concurrent a committé en premier.
-            # Rollback du SAVEPOINT courant, puis lecture de la tx existante.
             self.db.rollback()
             existing = self.tx_repo.get_by_idempotency_key(idempotency_key)
             if existing is not None:
                 return existing
-            raise  # IntegrityError non liée à l'idempotency_key
+            raise

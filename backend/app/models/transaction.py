@@ -23,8 +23,12 @@ class Transaction(Base):
             name="ck_transactions_statut",
         ),
         CheckConstraint(
-            "devise IN ('GNF','EUR','USD')",
+            "devise IN ('GNF','EUR','USD','GBP','XOF')",
             name="ck_transactions_devise",
+        ),
+        CheckConstraint(
+            "receiver_devise IS NULL OR receiver_devise IN ('GNF','EUR','USD','GBP','XOF')",
+            name="ck_transactions_receiver_devise",
         ),
         CheckConstraint(
             "montant > 0",
@@ -67,6 +71,16 @@ class Transaction(Base):
     )
     montant_total: Mapped[Decimal] = mapped_column(
         Numeric(18, 4), nullable=False
+    )
+    # Cross-currency fields (nullable for backward compat)
+    receiver_devise: Mapped[str | None] = mapped_column(
+        String(3), nullable=True
+    )
+    montant_converti: Mapped[Decimal | None] = mapped_column(
+        Numeric(18, 4), nullable=True
+    )
+    taux_applique: Mapped[Decimal | None] = mapped_column(
+        Numeric(18, 6), nullable=True
     )
     statut: Mapped[str] = mapped_column(
         String(20), nullable=False, default="PENDING", index=True

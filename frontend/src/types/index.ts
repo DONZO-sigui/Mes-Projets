@@ -1,7 +1,7 @@
 export type UserRole = 'USER' | 'ADMIN' | 'SUPERADMIN'
 export type UserStatus = 'ACTIVE' | 'SUSPENDED' | 'PENDING'
 export type WalletStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
-export type Devise = 'GNF' | 'EUR' | 'USD'
+export type Devise = 'GNF' | 'EUR' | 'USD' | 'GBP' | 'XOF'
 export type TransactionStatus =
   | 'PENDING'
   | 'PROCESSING'
@@ -45,6 +45,9 @@ export interface Transaction {
   devise: Devise
   frais: string
   montant_total: string
+  receiver_devise: Devise | null
+  montant_converti: string | null
+  taux_applique: string | null
   statut: TransactionStatus
   motif: string | null
   idempotency_key: string
@@ -168,6 +171,9 @@ export interface TransactionDetail {
   frais: string
   montant_total: string
   devise: Devise
+  receiver_devise: Devise | null
+  montant_converti: string | null
+  taux_applique: string | null
   statut: TransactionStatus
   motif: string | null
   confirmed_at: string | null
@@ -175,6 +181,20 @@ export interface TransactionDetail {
   updated_at: string
   sender: WalletParty
   receiver: WalletParty
+}
+
+export interface WalletPublicInfo {
+  numero: string
+  nom: string
+  prenom: string
+  devise: Devise
+  statut: string
+}
+
+export interface MNBCRateItem {
+  devise: Devise
+  taux: string
+  libelle: string
 }
 
 export interface BlockchainBlock {

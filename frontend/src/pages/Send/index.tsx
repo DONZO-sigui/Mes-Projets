@@ -3,10 +3,12 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { transactionsApi } from '../../api/transactions.api'
 import { beneficiariesApi } from '../../api/beneficiaries.api'
+import { walletsApi } from '../../api/wallets.api'
+import { mnbcApi } from '../../api/mnbc.api'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { TransactionStatusBadge } from '../../components/TransactionStatusBadge'
 import { formatAmount, formatDate, truncateHash } from '../../utils/formatters'
-import type { Transaction, Devise, Beneficiary } from '../../types'
+import type { Transaction, Devise, Beneficiary, MNBCRateItem } from '../../types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -130,19 +132,91 @@ function BeneficiaryQuickPick({
   )
 }
 
+// ─── Conversion preview ───────────────────────────────────────────────────────
+
+function ConversionPreview({
+  montant,
+  senderDevise,
+  receiverDevise,
+  rates,
+}: {
+  montant: string
+  senderDevise: Devise
+  receiverDevise: Devise
+  rates: MNBCRateItem[]
+}) {
+  if (!montant || isNaN(Number(montant)) || Number(montant) <= 0) return null
+  if (senderDevise === receiverDevise) return null
+
+  const rateMap = Object.fromEntries(rates.map((r) => [r.devise, Number(r.taux)]))
+  const tFrom = rateMap[senderDevise] ?? 1
+  const tTo = rateMap[receiverDevise] ?? 1
+
+  const amount = Number(montant)
+  const isCross = senderDevise !== receiverDevise
+  const feePct = isCross ? 0.015 : 0.005
+  const minFeeGnf = 500
+  const minFeeSender = minFeeGnf / tFrom
+  const feeRaw = amount * feePct
+  const fee = Math.max(feeRaw, minFeeSender)
+  const converted = (amount * tFrom) / tTo
+
+  return (
+    <div
+      className="d-flex flex-column gap-1 p-3 mb-3 rounded-3"
+      style={{
+        background: 'var(--gnf-blue-bg, rgba(22,73,255,0.07))',
+        border: '1px solid rgba(22,73,255,0.15)',
+        fontSize: '0.82rem',
+      }}
+    >
+      <div className="d-flex justify-content-between">
+        <span className="text-muted">Taux appliqué</span>
+        <span className="fw-semibold">
+          1 {senderDevise} = {(tFrom / tTo).toLocaleString('fr-FR', { maximumFractionDigits: 4 })} {receiverDevise}
+        </span>
+      </div>
+      <div className="d-flex justify-content-between">
+        <span className="text-muted">Frais (1,5%)</span>
+        <span>{formatAmount(fee.toFixed(4), senderDevise)}</span>
+      </div>
+      <div className="d-flex justify-content-between border-top pt-1 mt-1">
+        <span className="fw-semibold" style={{ color: 'var(--gnf-blue)' }}>Destinataire reçoit</span>
+        <span className="fw-bold" style={{ color: 'var(--gnf-blue)' }}>
+          {formatAmount(converted.toFixed(4), receiverDevise)}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 // ─── Step 1 : Form ────────────────────────────────────────────────────────────
 
 function SendForm({
   form,
   onChange,
   onNext,
+  senderDevise,
+  rates,
 }: {
   form: FormState
   onChange: (f: FormState) => void
   onNext: (f: FormState) => void
+  senderDevise: Devise
+  rates: MNBCRateItem[]
 }) {
   const [errors, setErrors] = useState<FormErrors>({})
   const [touched, setTouched] = useState<Partial<Record<keyof FormState, boolean>>>({})
+
+  // Lookup receiver wallet devise when numero is complete
+  const isNumeroComplete = /^\d{9}$/.test(form.receiver_numero.trim())
+  const { data: receiverInfo } = useQuery({
+    queryKey: ['wallet-public', form.receiver_numero.trim()],
+    queryFn: () => walletsApi.publicLookup(form.receiver_numero.trim()).then((r) => r.data),
+    enabled: isNumeroComplete,
+    staleTime: 60_000,
+    retry: false,
+  })
 
   const set =
     (field: keyof FormState) =>
@@ -207,10 +281,22 @@ function SendForm({
             Numéro à 9 chiffres du portefeuille destinataire.
           </div>
         )}
+
+        {/* Receiver info badge */}
+        {isNumeroComplete && receiverInfo && (
+          <div
+            className="d-flex align-items-center gap-2 mt-2 px-3 py-2 rounded-3"
+            style={{ background: 'rgba(22,73,255,0.07)', fontSize: '0.82rem' }}
+          >
+            <i className="bi bi-person-check-fill text-primary" aria-hidden="true" />
+            <span className="fw-semibold">{receiverInfo.prenom} {receiverInfo.nom}</span>
+            <span className="ms-auto badge bg-secondary bg-opacity-25 text-dark">{receiverInfo.devise}</span>
+          </div>
+        )}
       </div>
 
-      {/* Montant + Devise */}
-      <div className="mb-4">
+      {/* Montant + Devise (locked to sender's wallet) */}
+      <div className="mb-3">
         <label htmlFor="montant" className="form-label fw-semibold">
           Montant
           <span className="text-danger ms-1" aria-hidden="true">*</span>
@@ -229,17 +315,9 @@ function SendForm({
             onBlur={blur('montant')}
             aria-describedby="montant-help"
           />
-          <select
-            className="input-group-text form-select"
-            style={{ maxWidth: 100 }}
-            value={form.devise}
-            onChange={set('devise')}
-            aria-label="Devise"
-          >
-            <option value="GNF">GNF</option>
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-          </select>
+          <span className="input-group-text fw-bold" style={{ minWidth: 60 }}>
+            {senderDevise}
+          </span>
           {touched.montant && errors.montant && (
             <div className="invalid-feedback" role="alert">
               {errors.montant}
@@ -247,9 +325,19 @@ function SendForm({
           )}
         </div>
         <div id="montant-help" className="form-text">
-          Le montant exact sera validé par le serveur. La validation frontend ne garantit pas le transfert.
+          Envoi depuis votre wallet {senderDevise}.
         </div>
       </div>
+
+      {/* Conversion preview */}
+      {receiverInfo && rates.length > 0 && (
+        <ConversionPreview
+          montant={form.montant}
+          senderDevise={senderDevise}
+          receiverDevise={receiverInfo.devise}
+          rates={rates}
+        />
+      )}
 
       {/* Motif */}
       <div className="mb-4">
@@ -481,12 +569,25 @@ export default function Send() {
   const [step, setStep] = useState<Step>('form')
   const [form, setForm] = useState<FormState>({ ...INITIAL_FORM, receiver_numero: prefill })
   const [result, setResult] = useState<Transaction | null>(null)
-  // Idempotency key is generated once when entering 'confirm' step
   const idempotencyKeyRef = useRef<string | null>(null)
   const [submitError, setSubmitError] = useState<unknown>(null)
 
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+
+  // Fetch sender wallet devise and exchange rates
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet'],
+    queryFn: () => walletsApi.me().then((r) => r.data),
+  })
+  const { data: ratesData } = useQuery({
+    queryKey: ['mnbc-rates'],
+    queryFn: () => mnbcApi.rates().then((r) => r.data),
+    staleTime: 5 * 60_000,
+  })
+
+  const senderDevise: Devise = (wallet?.devise as Devise) ?? 'GNF'
+  const rates = ratesData ?? []
 
   const mutation = useMutation({
     mutationFn: () => {
@@ -496,7 +597,7 @@ export default function Send() {
           {
             receiver_numero: form.receiver_numero.trim(),
             montant: form.montant.trim(),
-            devise: form.devise,
+            devise: senderDevise,
             motif: form.motif.trim() || undefined,
           },
           key,
@@ -571,7 +672,13 @@ export default function Send() {
               setForm((f) => ({ ...f, receiver_numero: walletId }))
             }
           />
-          <SendForm form={form} onChange={setForm} onNext={handleGoToConfirm} />
+          <SendForm
+            form={form}
+            onChange={setForm}
+            onNext={handleGoToConfirm}
+            senderDevise={senderDevise}
+            rates={rates}
+          />
         </>
       )}
 

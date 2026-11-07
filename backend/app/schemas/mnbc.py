@@ -16,7 +16,14 @@ class MNBCReserveRead(BaseModel):
     updated_at: datetime
 
 
+class MNBCRateItem(BaseModel):
+    """Taux de change public pour une devise."""
+    devise: str
+    taux: Decimal
+    libelle: str
+
+
 class MNBCReserveCreate(BaseModel):
-    devise: str = Field(..., pattern="^(GNF|EUR|USD)$")
+    devise: str = Field(..., pattern="^(GNF|EUR|USD|GBP|XOF)$")
     reserve: Decimal = Field(..., ge=0, decimal_places=4)
     taux: Decimal = Field(..., gt=0, decimal_places=6)

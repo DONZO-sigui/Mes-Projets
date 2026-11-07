@@ -1,5 +1,5 @@
 import { apiClient } from './axios'
-import type { MNBCStatus, MNBCReserve } from '../types'
+import type { MNBCStatus, MNBCReserve, MNBCRateItem } from '../types'
 
 export const mnbcApi = {
   status: () =>
@@ -7,4 +7,7 @@ export const mnbcApi = {
 
   reserves: () =>
     apiClient.get<MNBCReserve[]>('/mnbc/reserves'),
+
+  rates: () =>
+    apiClient.get<MNBCRateItem[]>('/mnbc/rates'),
 }

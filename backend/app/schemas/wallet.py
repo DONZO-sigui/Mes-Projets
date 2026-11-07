@@ -4,12 +4,23 @@ from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
 
+class WalletPublicInfo(BaseModel):
+    """Info publique d'un wallet (sans solde ni NIF) — pour lookup destinataire."""
+    model_config = {"from_attributes": True}
+
+    numero: str
+    nom: str
+    prenom: str
+    devise: str
+    statut: str
+
+
 class WalletCreate(BaseModel):
     nif: str = Field(..., min_length=5, max_length=20, examples=["NIF123456"])
     nom: str = Field(..., min_length=1, max_length=100)
     prenom: str = Field(..., min_length=1, max_length=100)
     ville: str | None = Field(None, max_length=100)
-    devise: str = Field("GNF", pattern="^(GNF|EUR|USD)$")
+    devise: str = Field("GNF", pattern="^(GNF|EUR|USD|GBP|XOF)$")
 
     @field_validator("nif")
     @classmethod

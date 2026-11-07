@@ -17,7 +17,7 @@ from app.core.dependencies import get_current_user
 from app.db.session import get_db
 from app.models.user import User
 from app.repositories.wallet_repository import WalletRepository
-from app.schemas.wallet import WalletBalance, WalletDepositRequest, WalletRead
+from app.schemas.wallet import WalletBalance, WalletDepositRequest, WalletPublicInfo, WalletRead
 from app.services.wallet_service import WalletService
 
 router = APIRouter(prefix="/wallets", tags=["Wallets"])
@@ -95,6 +95,24 @@ def deposit_to_my_wallet(
     db.commit()
     db.refresh(locked_wallet)
     return WalletRead.model_validate(locked_wallet)
+
+
+# ─── Lookup public (non authentifié) ─────────────────────────
+
+@router.get(
+    "/public/{numero}",
+    response_model=WalletPublicInfo,
+    summary="Info publique d'un wallet par son numéro",
+)
+def get_wallet_public(numero: str, db: Session = Depends(get_db)) -> WalletPublicInfo:
+    repo = WalletRepository(db)
+    wallet = repo.get_by_numero(numero)
+    if wallet is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Wallet introuvable.",
+        )
+    return WalletPublicInfo.model_validate(wallet)
 
 
 # ─── Endpoint de diagnostic (non authentifié) ─────────────────

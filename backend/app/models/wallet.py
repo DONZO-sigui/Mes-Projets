@@ -15,7 +15,7 @@ class Wallet(Base):
     __tablename__ = "wallets"
     __table_args__ = (
         CheckConstraint(
-            "devise IN ('GNF','EUR','USD')",
+            "devise IN ('GNF','EUR','USD','GBP','XOF')",
             name="ck_wallets_devise",
         ),
         CheckConstraint(

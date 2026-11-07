@@ -14,7 +14,18 @@ const USD = new Intl.NumberFormat('en-US', {
   currency: 'USD',
 })
 
-const FORMATTERS: Record<string, Intl.NumberFormat> = { GNF, EUR, USD }
+const GBP = new Intl.NumberFormat('en-GB', {
+  style: 'currency',
+  currency: 'GBP',
+})
+
+const XOF = new Intl.NumberFormat('fr-SN', {
+  style: 'currency',
+  currency: 'XOF',
+  maximumFractionDigits: 0,
+})
+
+const FORMATTERS: Record<string, Intl.NumberFormat> = { GNF, EUR, USD, GBP, XOF }
 
 export function formatAmount(amount: string | number, devise: string): string {
   const formatter = FORMATTERS[devise] ?? GNF
