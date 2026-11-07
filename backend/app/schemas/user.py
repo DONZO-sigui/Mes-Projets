@@ -8,6 +8,7 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=8, max_length=128)
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
+    devise: str = Field("GNF", pattern="^(GNF|EUR|USD|GBP|XOF)$")
 
     @field_validator("email")
     @classmethod

@@ -151,14 +151,14 @@ class AuthService:
         )
         self.user_repo.create(user)
 
-        # Wallet GNF créé automatiquement à l'inscription
+        # Wallet créé automatiquement à l'inscription dans la devise locale
         wallet = Wallet(
             user_id=user.id,
             nif=_generate_nif(user.id),
             numero=_generate_numero(self.db),
             nom=data.last_name,
             prenom=data.first_name,
-            devise="GNF",
+            devise=data.devise,
         )
         self.db.add(wallet)
         self.db.flush()

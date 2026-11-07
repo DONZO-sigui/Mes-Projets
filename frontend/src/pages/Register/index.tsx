@@ -4,6 +4,52 @@ import { useAuth } from '../../auth/useAuth'
 import { authApi } from '../../api/auth.api'
 import { ErrorMessage } from '../../components/ErrorMessage'
 import { AuthAnimatedBg } from '../../components/AuthAnimatedBg'
+import type { Devise } from '../../types'
+
+// ─── Geolocation via timezone ────────────────────────────────────────────────
+
+const TIMEZONE_TO_DEVISE: Record<string, Devise> = {
+  'Africa/Conakry': 'GNF',
+  'Africa/Abidjan': 'XOF',
+  'Africa/Dakar': 'XOF',
+  'Africa/Bamako': 'XOF',
+  'Africa/Ouagadougou': 'XOF',
+  'Africa/Niamey': 'XOF',
+  'Africa/Cotonou': 'XOF',
+  'Africa/Lome': 'XOF',
+  'Africa/Accra': 'XOF',
+  'Europe/Paris': 'EUR',
+  'Europe/Brussels': 'EUR',
+  'Europe/Berlin': 'EUR',
+  'Europe/Madrid': 'EUR',
+  'Europe/Rome': 'EUR',
+  'Europe/Amsterdam': 'EUR',
+  'Europe/London': 'GBP',
+  'America/New_York': 'USD',
+  'America/Chicago': 'USD',
+  'America/Denver': 'USD',
+  'America/Los_Angeles': 'USD',
+  'America/Phoenix': 'USD',
+}
+
+const DEVISE_OPTIONS: { value: Devise; label: string; pays: string }[] = [
+  { value: 'GNF', label: 'GNF — Franc guinéen',         pays: '🇬🇳 Guinée' },
+  { value: 'XOF', label: 'XOF — Franc CFA (BCEAO)',      pays: '🌍 Afrique de l\'Ouest' },
+  { value: 'EUR', label: 'EUR — Euro',                    pays: '🇪🇺 Zone Euro' },
+  { value: 'USD', label: 'USD — Dollar américain',        pays: '🇺🇸 États-Unis' },
+  { value: 'GBP', label: 'GBP — Livre sterling',          pays: '🇬🇧 Royaume-Uni' },
+]
+
+function detectDevise(): Devise {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return TIMEZONE_TO_DEVISE[tz] ?? 'GNF'
+  } catch {
+    return 'GNF'
+  }
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -11,13 +57,14 @@ export default function Register() {
     last_name: '',
     email: '',
     password: '',
+    devise: detectDevise() as Devise,
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>(null)
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,7 +132,7 @@ export default function Register() {
 
           <div className="mb-3">
             <label htmlFor="email" className="form-label">
-              Adresse e-mail professionnelle ou personnelle
+              Adresse e-mail
             </label>
             <input
               id="email"
@@ -98,6 +145,30 @@ export default function Register() {
               autoComplete="email"
               disabled={loading}
             />
+          </div>
+
+          {/* Devise locale — détectée automatiquement via timezone */}
+          <div className="mb-3">
+            <label htmlFor="devise" className="form-label">
+              Votre devise locale
+            </label>
+            <select
+              id="devise"
+              className="form-select"
+              value={form.devise}
+              onChange={set('devise')}
+              disabled={loading}
+            >
+              {DEVISE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.pays} — {opt.label}
+                </option>
+              ))}
+            </select>
+            <div className="form-text d-flex align-items-center gap-1 mt-1">
+              <i className="bi bi-geo-alt text-muted" aria-hidden="true" />
+              <span>Détectée depuis votre fuseau horaire. Modifiable si besoin.</span>
+            </div>
           </div>
 
           <div className="mb-4">
